@@ -1,17 +1,63 @@
 package endpoints
 
 import (
+	"encoding/json"
+	"fmt"
+	"iot-home/netatmo"
+	"log"
 	"net/http"
 )
 
 const STATIC_DIR = "./wwwroot/"
+const API_PREFIX = "/api/v1/data/"
 
-func ServeStaticContent() {
-	http.Handle("/", Index())
-
+func Init(netatmoService netatmo.Service) {
+	serveStaticContent()
+	serveApiEndpoints(netatmoService)
 }
 
-func Index() http.Handler {
+func serveApiEndpoints(netatmoService netatmo.Service) {
+
+	http.Header.Set("Content-Type", "application/json")
+
+	http.HandleFunc(API_PREFIX+"netatmo/current", serveNetatmoCurrent(netatmoService))
+	// http.Handle(API_PREFIX+"netatmo/series", serveNetatmoSeries())
+	// http.Handle(API_PREFIX+"wunderlist", serveWunderlist())
+	// http.Handle(API_PREFIX+"hue", serveHue())
+}
+
+func serveNetatmoCurrent(netatmoService netatmo.Service) func(responseWriter http.ResponseWriter, request *http.Request) {
+	return func(responseWriter http.ResponseWriter, request *http.Request) {
+		current, error := netatmoService.GetCurrent()
+		if error != nil {
+			log.Fatal(error)
+		}
+
+		println(current)
+
+		json.NewEncoder(responseWriter).Encode(current)
+
+		fmt.Printf(responseWriter)
+	}
+}
+
+// func serveNetatmoSeries() http.Handler {
+
+// }
+
+// func serveWunderlist() http.Handler {
+
+// }
+
+// func serveHue() http.Handler {
+
+// }
+
+func serveStaticContent() {
+	http.Handle("/", index())
+}
+
+func index() http.Handler {
 	return http.FileServer(http.Dir(STATIC_DIR))
 }
 
