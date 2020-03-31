@@ -10,7 +10,7 @@ import (
 
 func main() {
 	endpoints.Serve()
-	fmt.Println("Yippikayaj")
+	fmt.Println("Yippikayajdd")
 	fmt.Println("Enter text:")
 
 	text := read_line()
