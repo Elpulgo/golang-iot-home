@@ -5,18 +5,28 @@ import (
 	"fmt"
 	"iot-home/endpoints"
 	"iot-home/endpoints/greeting"
+	"log"
+	"net/http"
 	"os"
 )
 
 func main() {
-	endpoints.Serve()
-	fmt.Println("Yippikayajdd")
-	fmt.Println("Enter text:")
+	endpoints.ServeStaticContent()
 
-	text := read_line()
-	fmt.Println(text)
+	fmt.Println("Yippikayajdd")
+
+	// fmt.Println("Enter text:")
+
+	// text := read_line()
+	// fmt.Println(text)
 
 	fmt.Println(greeting.WelcomeText)
+
+	log.Println("Listening on :3001...")
+	err := http.ListenAndServe(":3001", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func read_line() string {
