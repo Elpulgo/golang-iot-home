@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"iot-home/netatmo"
-	"log"
 	"net/http"
 )
 
@@ -30,9 +29,10 @@ func serveNetatmoCurrent(service netatmo.Service) http.Handler {
 	handlerFunc := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
 		current, error := service.GetCurrent()
 		if error != nil {
-			log.Fatal(error)
+			fmt.Println(error)
+			responseWriter.Write([]byte("Failed to get current data from Netatmo!"))
+			return
 		}
-
 		fmt.Println(current)
 
 		json.NewEncoder(responseWriter).Encode(current)
