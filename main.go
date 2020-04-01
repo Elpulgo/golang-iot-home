@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"iot-home/endpoints"
 	"iot-home/endpoints/greeting"
+	"iot-home/netatmo"
 	"log"
 	"net/http"
 	"os"
 )
 
 func main() {
-	endpoints.ServeStaticContent()
+	netatmoRest := new(netatmo.Rest)
+	endpoints.Init(netatmo.New(netatmoRest))
 
+	fmt.Println(netatmoRest.GetCurrent())
 	fmt.Println("Yippikayajdd")
 
 	// fmt.Println("Enter text:")

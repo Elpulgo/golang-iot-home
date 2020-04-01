@@ -18,27 +18,27 @@ func Init(netatmoService netatmo.Service) {
 
 func serveApiEndpoints(netatmoService netatmo.Service) {
 
-	http.Header.Set("Content-Type", "application/json")
+	http.Header.Set(http.Header{}, "Content-Type", "application/json")
 
-	http.HandleFunc(API_PREFIX+"netatmo/current", serveNetatmoCurrent(netatmoService))
+	http.Handle(API_PREFIX+"netatmo/current", serveNetatmoCurrent(netatmoService))
 	// http.Handle(API_PREFIX+"netatmo/series", serveNetatmoSeries())
 	// http.Handle(API_PREFIX+"wunderlist", serveWunderlist())
 	// http.Handle(API_PREFIX+"hue", serveHue())
 }
 
-func serveNetatmoCurrent(netatmoService netatmo.Service) func(responseWriter http.ResponseWriter, request *http.Request) {
-	return func(responseWriter http.ResponseWriter, request *http.Request) {
-		current, error := netatmoService.GetCurrent()
+func serveNetatmoCurrent(service netatmo.Service) http.Handler {
+	handlerFunc := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
+		current, error := service.GetCurrent()
 		if error != nil {
 			log.Fatal(error)
 		}
 
-		println(current)
+		fmt.Println(current)
 
 		json.NewEncoder(responseWriter).Encode(current)
+	})
 
-		fmt.Printf(responseWriter)
-	}
+	return handlerFunc
 }
 
 // func serveNetatmoSeries() http.Handler {
@@ -59,8 +59,4 @@ func serveStaticContent() {
 
 func index() http.Handler {
 	return http.FileServer(http.Dir(STATIC_DIR))
-}
-
-func ServeEndpoints() {
-
 }
