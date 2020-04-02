@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+*.env
 
 # Will ignore executables on Linux
 main

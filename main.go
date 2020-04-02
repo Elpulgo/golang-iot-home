@@ -1,39 +1,35 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"iot-home/credentials"
 	"iot-home/endpoints"
-	"iot-home/endpoints/greeting"
+	"iot-home/logger"
 	"iot-home/netatmo"
 	"log"
 	"net/http"
-	"os"
+
+	"github.com/joho/godotenv"
 )
+
+func init() {
+	// loads values from .env into the system
+	if err := godotenv.Load(); err != nil {
+		logger.Fatal("No .env file found. Will exit application ...")
+	}
+}
 
 func main() {
 	netatmoRest := new(netatmo.Rest)
 	endpoints.Init(netatmo.New(netatmoRest))
 
-	fmt.Println(netatmoRest.GetCurrent())
+	credentials.GetNetatmoOAuth()
+
 	fmt.Println("Yippikayajdd")
-
-	// fmt.Println("Enter text:")
-
-	// text := read_line()
-	// fmt.Println(text)
-
-	fmt.Println(greeting.WelcomeText)
 
 	log.Println("Listening on :3001...")
 	err := http.ListenAndServe(":3001", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func read_line() string {
-	reader := bufio.NewReader(os.Stdin)
-	text, _ := reader.ReadString('\n')
-	return text
 }

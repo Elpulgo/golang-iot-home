@@ -3,6 +3,7 @@ package endpoints
 import (
 	"encoding/json"
 	"fmt"
+	"iot-home/logger"
 	"iot-home/netatmo"
 	"net/http"
 )
@@ -16,7 +17,7 @@ func Init(netatmoService netatmo.Service) {
 }
 
 func serveApiEndpoints(netatmoService netatmo.Service) {
-
+	logger.Info("Hello from serveApiEndpoints")
 	http.Header.Set(http.Header{}, "Content-Type", "application/json")
 
 	http.Handle(API_PREFIX+"netatmo/current", serveNetatmoCurrent(netatmoService))
