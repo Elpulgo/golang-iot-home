@@ -31,8 +31,8 @@ func BuildNetatmoMeasureUrl(
 			"?access_token=" + accessToken +
 			"&device_id=" + deviceId +
 			"&module_id=" + moduleId +
-			"&date_begin=" + fmt.Sprintf("%s", start) +
-			"&date_end=" + fmt.Sprintf("%s", end) +
+			"&date_begin=" + fmt.Sprintf("%s", string(start)) +
+			"&date_end=" + fmt.Sprintf("%s", string(end)) +
 			"&scale=max" +
 			"&type=temperature,humidity")
 

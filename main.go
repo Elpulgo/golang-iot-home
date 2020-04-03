@@ -23,7 +23,8 @@ func main() {
 	netatmoRest := new(netatmo.Rest)
 	endpoints.Init(netatmo.New(netatmoRest))
 
-	credentials.GetNetatmoOAuth()
+	// token := new(netatmo.NetatmoOAuth)
+	token, error := credentials.GetNetatmoOAuth()
 
 	fmt.Println("Yippikayajdd")
 

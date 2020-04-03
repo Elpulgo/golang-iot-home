@@ -10,5 +10,10 @@ type NetatmoOAuth struct {
 }
 
 func (OAuth *NetatmoOAuth) Expires() time.Time {
-	return time.Now().Add(time.Duration(OAuth.ExpiresIn))
+
+	return time.Now().Add(time.Duration(transformToHours(OAuth.ExpiresIn)))
+}
+
+func transformToHours(expiresIn int) time.Duration {
+	return time.Duration(expiresIn * 1000 * 1000 * 1000)
 }
