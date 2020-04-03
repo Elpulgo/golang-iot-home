@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
-	"strings"
 )
 
 func GetHueCredentials() {
@@ -42,20 +40,10 @@ func GetNetatmoOAuth() {
 	data.Set("password", password)
 
 	fmt.Println(data)
+	fmt.Println(apiUrl.String())
 
-	u, _ := url.ParseRequestURI(apiUrl.EscapedPath())
-	// u.Path = resource
-	urlStr := u.String() // "https://api.com/user/"
+	resp, error := http.PostForm(apiUrl.String(), data)
 
-	fmt.Println(urlStr)
-
-	client := &http.Client{}
-	r, _ := http.NewRequest("POST", apiUrl.EscapedPath(), strings.NewReader(data.Encode())) // URL-encoded payload
-	// r.Header.Add("Authorization", "auth_token=\"XXXXXXX\"")
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
-
-	resp, error := client.Do(r)
 	if error != nil {
 		logger.Error(fmt.Sprintf("Failed to get Netatmo OAuthToken %s", error.Error()))
 		return
