@@ -9,8 +9,11 @@ type NetatmoOAuth struct {
 	ExpiresIn    int      `json:"expires_in"`
 }
 
-func (OAuth *NetatmoOAuth) Expires() time.Time {
+func (Auth *NetatmoOAuth) HasExpired() bool {
+	return time.Now().After(Auth.Expires())
+}
 
+func (OAuth *NetatmoOAuth) Expires() time.Time {
 	return time.Now().Add(time.Duration(transformToHours(OAuth.ExpiresIn)))
 }
 

@@ -5,16 +5,54 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"iot-home/logger"
 	"iot-home/netatmo"
 	"iot-home/utilities"
 	"net/http"
 	"net/url"
 	"os"
+	"path"
+	"sync"
 )
 
-func GetHueCredentials() {
+var lock = &sync.Mutex{}
 
+var netatmoOAuth *netatmo.NetatmoOAuth
+var hueAppKey *string
+
+const deviceName string = "b5c92462-aede-47de"
+const appName string = "IoTHomeDashboard"
+
+func GetHueCredentials() (appKey string, appName string, deviceName string) {
+	appKey, error := loadAppKey()
+
+	if error != nil {
+		logger.Error(fmt.Sprintf("Failed to load app key %s", error.Error()))
+		return "", "", ""
+	}
+
+	return appKey, appName, deviceName
+}
+
+func TryPersistHueAppKey(appKey string) bool {
+	if appKey == "" {
+		return false
+	}
+
+	error := ioutil.WriteFile(hueAppKeyPath(), []byte(appKey), 0644)
+
+	if error != nil {
+		logger.Error(fmt.Sprintf("Failed to persist hue app key %s", error.Error()))
+		return false
+	}
+
+	lock.Lock()
+	defer lock.Unlock()
+
+	hueAppKey = &appKey
+
+	return true
 }
 
 func GetWunderlistCredentials() {
@@ -22,6 +60,11 @@ func GetWunderlistCredentials() {
 }
 
 func GetNetatmoOAuth() (*netatmo.NetatmoOAuth, error) {
+
+	if tokenAlreadyValid() {
+		return netatmoOAuth, nil
+	}
+
 	clientId, clientIdExists := os.LookupEnv("NETATMO_CLIENTID")
 	clientSecret, clientSecretExists := os.LookupEnv("NETATMO_CLIENTSECRET")
 	userName, userNameExists := os.LookupEnv("NETATMO_USERNAME")
@@ -56,7 +99,22 @@ func GetNetatmoOAuth() (*netatmo.NetatmoOAuth, error) {
 		return nil, errors.New("Failed to parse content from Netatmo OAuth request!")
 	}
 
+	lock.Lock()
+	defer lock.Unlock()
+
+	if netatmoOAuth == nil {
+		netatmoOAuth = &token
+	}
+
 	return &token, nil
+}
+
+func tokenAlreadyValid() bool {
+	if netatmoOAuth != nil && !netatmoOAuth.HasExpired() {
+		return true
+	}
+
+	return false
 }
 
 func getToken(reader io.ReadCloser) (netatmo.NetatmoOAuth, error) {
@@ -69,4 +127,35 @@ func getToken(reader io.ReadCloser) (netatmo.NetatmoOAuth, error) {
 	}
 
 	return *token, nil
+}
+
+func loadAppKey() (string, error) {
+	if hueAppKey != nil {
+		return *hueAppKey, nil
+	}
+
+	fileInfo, error := os.Stat(hueAppKeyPath())
+
+	if os.IsNotExist(error) {
+		return "", error
+	}
+
+	fileContent, error := ioutil.ReadFile(fileInfo.Name())
+
+	if error != nil {
+		return "", error
+	}
+
+	return string(fileContent), nil
+
+}
+
+func hueAppKeyPath() string {
+	currentDir, error := os.Getwd()
+
+	if error != nil {
+		panic(fmt.Sprintf("Failed to find current directory .."))
+	}
+
+	return path.Join(currentDir, "settings", "hueappkey.dat")
 }
