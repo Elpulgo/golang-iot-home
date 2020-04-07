@@ -3,7 +3,6 @@ package endpoints
 import (
 	"encoding/json"
 	"fmt"
-	"iot-home/logger"
 	"iot-home/netatmo"
 	"net/http"
 )
@@ -17,8 +16,6 @@ func Init(netatmoService netatmo.Service) {
 }
 
 func serveApiEndpoints(netatmoService netatmo.Service) {
-	logger.Info("Hello from serveApiEndpoints")
-
 	// appKey, appName, deviceName := credentials.GetHueCredentials()
 
 	// if credentials.TryPersistHueAppKey("my app key") {
@@ -43,8 +40,6 @@ func serveNetatmoCurrent(service netatmo.Service) http.Handler {
 			responseWriter.Write([]byte("Failed to get current data from Netatmo!"))
 			return
 		}
-		fmt.Println(current)
-
 		json.NewEncoder(responseWriter).Encode(current)
 	})
 

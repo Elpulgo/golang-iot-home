@@ -72,10 +72,10 @@ func GetWunderlistCredentials() (accessToken string, clientId string) {
 	return accessToken, clientId
 }
 
-func GetNetatmoOAuth() (*netatmo.NetatmoOAuth, error) {
+func GetNetatmoOAuth() (netatmo.NetatmoOAuth, error) {
 
 	if netatmoTokenAlreadyValid() {
-		return netatmoOAuth, nil
+		return *netatmoOAuth, nil
 	}
 
 	clientId, clientIdExists := os.LookupEnv("NETATMO_CLIENTID")
@@ -85,7 +85,7 @@ func GetNetatmoOAuth() (*netatmo.NetatmoOAuth, error) {
 
 	if !clientIdExists || !clientSecretExists || !userNameExists || !passwordExists {
 		logger.Error("Netatmo credentials is missing, ensure clientid, clientsecret, username & password exsists in .env file!")
-		return nil, errors.New("Credentials for Netatmo does not exists in .env file!")
+		return *netatmoOAuth, errors.New("Credentials for Netatmo does not exists in .env file!")
 	}
 
 	apiUrl := utilities.BuildOauthTokenUrl().String()
@@ -101,7 +101,7 @@ func GetNetatmoOAuth() (*netatmo.NetatmoOAuth, error) {
 
 	if error != nil {
 		logger.Error(fmt.Sprintf("Failed to get Netatmo OAuthToken %s", error.Error()))
-		return nil, errors.New("Failed to get Netatmo OAuth token from response!")
+		return *netatmoOAuth, errors.New("Failed to get Netatmo OAuth token from response!")
 	}
 
 	defer response.Body.Close()
@@ -109,7 +109,7 @@ func GetNetatmoOAuth() (*netatmo.NetatmoOAuth, error) {
 	token, error := getNetatmoToken(response.Body)
 
 	if error != nil {
-		return nil, errors.New("Failed to parse content from Netatmo OAuth request!")
+		return *netatmoOAuth, errors.New("Failed to parse content from Netatmo OAuth request!")
 	}
 
 	lock.Lock()
@@ -119,7 +119,7 @@ func GetNetatmoOAuth() (*netatmo.NetatmoOAuth, error) {
 		netatmoOAuth = &token
 	}
 
-	return &token, nil
+	return token, nil
 }
 
 func netatmoTokenAlreadyValid() bool {

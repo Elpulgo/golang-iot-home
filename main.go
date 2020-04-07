@@ -4,6 +4,7 @@ import (
 	"iot-home/endpoints"
 	"iot-home/logger"
 	"iot-home/netatmo"
+	"iot-home/netatmoRest"
 	"net/http"
 
 	"github.com/joho/godotenv"
@@ -17,10 +18,10 @@ func init() {
 }
 
 func main() {
-	netatmoRest := new(netatmo.Rest)
+	netatmoRest := new(netatmoRest.Rest)
 	endpoints.Init(netatmo.New(netatmoRest))
 
-	logger.Info("Listening on :3001 ...")
+	logger.Info("Started web server, listening on :3001 ...")
 	error := http.ListenAndServe(":3001", nil)
 	if error != nil {
 		logger.Fatal(error.Error())

@@ -1,7 +1,7 @@
 package netatmo
 
 type Repository interface {
-	GetCurrent() (Current, error)
+	GetCurrent(chan CurrentResult)
 }
 
 type Service interface {
@@ -12,10 +12,22 @@ type service struct {
 	repository Repository
 }
 
+type CurrentResult struct {
+	Current Current
+	Error   error
+}
+
 func New(repository Repository) Service {
 	return &service{repository: repository}
 }
 
 func (service *service) GetCurrent() (Current, error) {
-	return service.repository.GetCurrent()
+	channel := make(chan CurrentResult)
+
+	go service.repository.GetCurrent(channel)
+
+	response := <-channel
+
+	return response.Current, response.Error
+
 }

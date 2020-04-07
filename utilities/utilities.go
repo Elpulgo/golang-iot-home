@@ -42,3 +42,15 @@ func BuildNetatmoMeasureUrl(
 
 	return measureUrl
 }
+func BuildStationUrl(accessToken string, deviceId string) *url.URL {
+	stationUrl, error := url.Parse(
+		NetatmoBaseUrl +
+			"/api/getstationsdata" +
+			"?access_token=" + accessToken +
+			"&device_id=" + deviceId)
+
+	if error != nil {
+		logger.Error(fmt.Sprintf("Failed to build Netatmo station url, %s" + error.Error()))
+	}
+	return stationUrl
+}
