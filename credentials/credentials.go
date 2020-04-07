@@ -21,8 +21,8 @@ var lock = &sync.Mutex{}
 var netatmoOAuth *netatmo.NetatmoOAuth
 var hueAppKey *string
 
-const deviceName string = "b5c92462-aede-47de"
-const appName string = "IoTHomeDashboard"
+var DeviceName string = "b5c92462-aede-47de"
+var AppName string = "IoTHomeDashboard"
 
 func GetHueCredentials() (appKey string, appName string, deviceName string) {
 	appKey, error := loadAppKey()
@@ -32,7 +32,7 @@ func GetHueCredentials() (appKey string, appName string, deviceName string) {
 		return "", "", ""
 	}
 
-	return appKey, appName, deviceName
+	return appKey, AppName, DeviceName
 }
 
 func TryPersistHueAppKey(appKey string) bool {
@@ -134,20 +134,30 @@ func loadAppKey() (string, error) {
 		return *hueAppKey, nil
 	}
 
-	fileInfo, error := os.Stat(hueAppKeyPath())
+	keyPath := hueAppKeyPath()
 
-	if os.IsNotExist(error) {
-		return "", error
-	}
-
-	fileContent, error := ioutil.ReadFile(fileInfo.Name())
+	fileInfo, error := os.Stat(keyPath)
+	_ = fileInfo
 
 	if error != nil {
 		return "", error
 	}
 
-	return string(fileContent), nil
+	fileContent, error := ioutil.ReadFile(keyPath)
 
+	if error != nil {
+		return "", error
+	}
+
+	lock.Lock()
+	defer lock.Unlock()
+
+	if hueAppKey == nil {
+		key := string(fileContent)
+		hueAppKey = &key
+	}
+
+	return string(fileContent), nil
 }
 
 func hueAppKeyPath() string {
@@ -155,6 +165,17 @@ func hueAppKeyPath() string {
 
 	if error != nil {
 		panic(fmt.Sprintf("Failed to find current directory .."))
+	}
+
+	fileInfo, error := os.Stat(path.Join(currentDir, "settings", "hueappkey.dat"))
+	_ = fileInfo
+
+	if os.IsNotExist(error) {
+		errCreateDir := os.MkdirAll(path.Join(currentDir, "settings"), 0755)
+		if errCreateDir != nil {
+			logger.Error(fmt.Sprintf("Failed to create directory for hueappkey to be stored %s", errCreateDir.Error()))
+			return ""
+		}
 	}
 
 	return path.Join(currentDir, "settings", "hueappkey.dat")

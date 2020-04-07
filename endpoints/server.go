@@ -18,6 +18,15 @@ func Init(netatmoService netatmo.Service) {
 
 func serveApiEndpoints(netatmoService netatmo.Service) {
 	logger.Info("Hello from serveApiEndpoints")
+
+	// appKey, appName, deviceName := credentials.GetHueCredentials()
+
+	// if credentials.TryPersistHueAppKey("my app key") {
+	// 	fmt.Println("Succeded in persisting app key")
+	// } else {
+	// 	fmt.Println("Failed to persist app key")
+	// }
+
 	http.Header.Set(http.Header{}, "Content-Type", "application/json")
 
 	http.Handle(API_PREFIX+"netatmo/current", serveNetatmoCurrent(netatmoService))
