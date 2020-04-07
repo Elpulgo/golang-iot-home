@@ -25,7 +25,7 @@ var DeviceName string = "b5c92462-aede-47de"
 var AppName string = "IoTHomeDashboard"
 
 func GetHueCredentials() (appKey string, appName string, deviceName string) {
-	appKey, error := loadAppKey()
+	appKey, error := loadHueAppKey()
 
 	if error != nil {
 		logger.Error(fmt.Sprintf("Failed to load app key %s", error.Error()))
@@ -55,13 +55,26 @@ func TryPersistHueAppKey(appKey string) bool {
 	return true
 }
 
-func GetWunderlistCredentials() {
+func GetWunderlistCredentials() (accessToken string, clientId string) {
+	clientId, clientIdExists := os.LookupEnv("WUNDERLIST_CLIENTID")
+	accessToken, accessTokenExists := os.LookupEnv("WUNDERLIST_CLIENTID")
 
+	if !clientIdExists {
+		logger.Error("Wunderlist credentials is missing, ensure clientId exists in .env file!")
+		return "", ""
+	}
+
+	if !accessTokenExists {
+		logger.Error("Wunderlist credentials is missing, ensure accesstoken exists in .env file!")
+		return "", ""
+	}
+
+	return accessToken, clientId
 }
 
 func GetNetatmoOAuth() (*netatmo.NetatmoOAuth, error) {
 
-	if tokenAlreadyValid() {
+	if netatmoTokenAlreadyValid() {
 		return netatmoOAuth, nil
 	}
 
@@ -93,7 +106,7 @@ func GetNetatmoOAuth() (*netatmo.NetatmoOAuth, error) {
 
 	defer response.Body.Close()
 
-	token, error := getToken(response.Body)
+	token, error := getNetatmoToken(response.Body)
 
 	if error != nil {
 		return nil, errors.New("Failed to parse content from Netatmo OAuth request!")
@@ -109,7 +122,7 @@ func GetNetatmoOAuth() (*netatmo.NetatmoOAuth, error) {
 	return &token, nil
 }
 
-func tokenAlreadyValid() bool {
+func netatmoTokenAlreadyValid() bool {
 	if netatmoOAuth != nil && !netatmoOAuth.HasExpired() {
 		return true
 	}
@@ -117,7 +130,7 @@ func tokenAlreadyValid() bool {
 	return false
 }
 
-func getToken(reader io.ReadCloser) (netatmo.NetatmoOAuth, error) {
+func getNetatmoToken(reader io.ReadCloser) (netatmo.NetatmoOAuth, error) {
 	token := new(netatmo.NetatmoOAuth)
 	err := json.NewDecoder(reader).Decode(token)
 
@@ -129,7 +142,7 @@ func getToken(reader io.ReadCloser) (netatmo.NetatmoOAuth, error) {
 	return *token, nil
 }
 
-func loadAppKey() (string, error) {
+func loadHueAppKey() (string, error) {
 	if hueAppKey != nil {
 		return *hueAppKey, nil
 	}
