@@ -24,7 +24,22 @@ var hueAppKey *string
 var DeviceName string = "b5c92462-aede-47de"
 var AppName string = "IoTHomeDashboard"
 
-func GetHueCredentials() (appKey string, appName string, deviceName string) {
+type CredentialsService interface {
+	GetHueCredentials() (appKey string, appName string, deviceName string)
+	TryPersistHueAppKey(appKey string) bool
+	GetWunderlistCredentials() (accessToken string, clientId string)
+	GetNetatmoOAuth() (netatmo.NetatmoOAuth, error)
+}
+
+type credentialsService struct {
+	service CredentialsService
+}
+
+func New() CredentialsService {
+	return new(credentialsService)
+}
+
+func (credentialsService *credentialsService) GetHueCredentials() (appKey string, appName string, deviceName string) {
 	appKey, error := loadHueAppKey()
 
 	if error != nil {
@@ -35,7 +50,7 @@ func GetHueCredentials() (appKey string, appName string, deviceName string) {
 	return appKey, AppName, DeviceName
 }
 
-func TryPersistHueAppKey(appKey string) bool {
+func (credentialsService *credentialsService) TryPersistHueAppKey(appKey string) bool {
 	if appKey == "" {
 		return false
 	}
@@ -55,7 +70,7 @@ func TryPersistHueAppKey(appKey string) bool {
 	return true
 }
 
-func GetWunderlistCredentials() (accessToken string, clientId string) {
+func (credentialsService *credentialsService) GetWunderlistCredentials() (accessToken string, clientId string) {
 	clientId, clientIdExists := os.LookupEnv("WUNDERLIST_CLIENTID")
 	accessToken, accessTokenExists := os.LookupEnv("WUNDERLIST_CLIENTID")
 
@@ -72,7 +87,7 @@ func GetWunderlistCredentials() (accessToken string, clientId string) {
 	return accessToken, clientId
 }
 
-func GetNetatmoOAuth() (netatmo.NetatmoOAuth, error) {
+func (credentialsService *credentialsService) GetNetatmoOAuth() (netatmo.NetatmoOAuth, error) {
 
 	if netatmoTokenAlreadyValid() {
 		return *netatmoOAuth, nil

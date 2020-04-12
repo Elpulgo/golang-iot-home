@@ -10,32 +10,27 @@ import (
 	"iot-home/utilities"
 	"net/http"
 	"os"
+
+	"github.com/golobby/container"
 )
 
-type Rest struct {
+type RestService interface {
+	GetCurrent(result chan netatmo.CurrentResult)
 }
 
-func (rest *Rest) GetCurrent(result chan netatmo.CurrentResult) {
-	// current := &Current{
-	// 	CurrentData: CurrentData{
-	// 		Devices: []Device{
-	// 			Device{
-	// 				DashboardData: DashboardData{
-	// 					Temperature:      32,
-	// 					CO2:              1,
-	// 					Pressure:         3,
-	// 					AbsolutePressure: 5,
-	// 					MinTemp:          4,
-	// 					MaxTemp:          5,
-	// 					Humidity:         30,
-	// 					TempTrend:        "Up",
-	// 					PressureTrend:    "Down",
-	// 				},
-	// 			},
-	// 		},
-	// 	}}
+type rest struct {
+	service RestService
+}
 
-	// token := new(netatmo.NetatmoOAuth)
+func New() RestService {
+	return new(rest)
+}
+
+func (rest *rest) GetCurrent(result chan netatmo.CurrentResult) {
+
+	// TODO: Make global in this file somehow.. ?
+	var credentials credentials.CredentialsService
+	container.Make(&credentials)
 	token, error := credentials.GetNetatmoOAuth()
 
 	if error != nil {
