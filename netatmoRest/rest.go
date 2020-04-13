@@ -10,8 +10,6 @@ import (
 	"iot-home/utilities"
 	"net/http"
 	"os"
-
-	"github.com/golobby/container"
 )
 
 type RestService interface {
@@ -19,19 +17,16 @@ type RestService interface {
 }
 
 type rest struct {
-	service RestService
+	service     RestService
+	credentials credentials.CredentialsService
 }
 
-func New() RestService {
-	return new(rest)
+func New(credentials credentials.CredentialsService) RestService {
+	return &rest{credentials: credentials}
 }
 
 func (rest *rest) GetCurrent(result chan netatmo.CurrentResult) {
-
-	// TODO: Make global in this file somehow.. ?
-	var credentials credentials.CredentialsService
-	container.Make(&credentials)
-	token, error := credentials.GetNetatmoOAuth()
+	token, error := rest.credentials.GetNetatmoOAuth()
 
 	if error != nil {
 		logger.Error("Failed to get Netatmo current data from Netatmo API, access token not working")

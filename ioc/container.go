@@ -14,7 +14,9 @@ func Setup() {
 	})
 
 	container.Transient(func() netatmoRest.RestService {
-		return netatmoRest.New()
+		var credentials credentials.CredentialsService
+		container.Make(&credentials)
+		return netatmoRest.New(credentials)
 	})
 
 	container.Transient(func() netatmo.Service {
