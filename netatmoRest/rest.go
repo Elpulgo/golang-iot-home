@@ -2,14 +2,14 @@ package netatmoRest
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"iot-home/credentials"
-	"iot-home/logger"
 	"iot-home/netatmo"
 	"iot-home/utilities"
 	"net/http"
 	"os"
+
+	logger "github.com/sirupsen/logrus"
 )
 
 type RestService interface {
@@ -45,7 +45,7 @@ func (rest *rest) GetCurrent(result chan netatmo.CurrentResult) {
 	response, error := http.Get(apiUrl)
 
 	if error != nil {
-		logger.Error(fmt.Sprintf("Failed to get _current_ data from Netatmo API: %s", error.Error()))
+		logger.WithError(error).Error("Failed to get _current_ data from Netatmo API")
 		result <- netatmo.CurrentResult{Current: netatmo.Current{}, Error: error}
 	}
 

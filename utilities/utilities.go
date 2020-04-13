@@ -2,8 +2,9 @@ package utilities
 
 import (
 	"fmt"
-	"iot-home/logger"
 	"net/url"
+
+	logger "github.com/sirupsen/logrus"
 )
 
 const NetatmoBaseUrl string = "https://api.netatmo.com"
@@ -12,7 +13,7 @@ func BuildOauthTokenUrl() *url.URL {
 	oauthUrl, error := url.Parse(NetatmoBaseUrl + "/oauth2/token")
 
 	if error != nil {
-		logger.Error(fmt.Sprintf("Failed to build Netatmo oauth2 token url, %s", error.Error()))
+		logger.WithError(error).Error("Failed to build Netatmo oauth2 token url")
 	}
 
 	return oauthUrl
@@ -37,7 +38,7 @@ func BuildNetatmoMeasureUrl(
 			"&type=temperature,humidity")
 
 	if error != nil {
-		logger.Error(fmt.Sprintf("Failed to build Netatmo measure url, %s" + error.Error()))
+		logger.WithError(error).Error("Failed to build Netatmo measure url")
 	}
 
 	return measureUrl
@@ -50,7 +51,7 @@ func BuildStationUrl(accessToken string, deviceId string) *url.URL {
 			"&device_id=" + deviceId)
 
 	if error != nil {
-		logger.Error(fmt.Sprintf("Failed to build Netatmo station url, %s" + error.Error()))
+		logger.WithError(error).Error("Failed to build Netatmo station url")
 	}
 	return stationUrl
 }
