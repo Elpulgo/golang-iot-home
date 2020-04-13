@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"iot-home/logger"
 	"iot-home/netatmo"
 	"iot-home/utilities"
 	"net/http"
@@ -14,6 +13,8 @@ import (
 	"os"
 	"path"
 	"sync"
+
+	logger "github.com/sirupsen/logrus"
 )
 
 var lock = &sync.Mutex{}
@@ -43,7 +44,7 @@ func (credentialsService *credentialsService) GetHueCredentials() (appKey string
 	appKey, error := loadHueAppKey()
 
 	if error != nil {
-		logger.Error(fmt.Sprintf("Failed to load app key %s", error.Error()))
+		logger.WithError(error).Error("Failed to load app key")
 		return "", "", ""
 	}
 
@@ -58,7 +59,7 @@ func (credentialsService *credentialsService) TryPersistHueAppKey(appKey string)
 	error := ioutil.WriteFile(hueAppKeyPath(), []byte(appKey), 0644)
 
 	if error != nil {
-		logger.Error(fmt.Sprintf("Failed to persist hue app key %s", error.Error()))
+		logger.WithError(error).Error("Failed to persist hueapp key")
 		return false
 	}
 
@@ -115,7 +116,7 @@ func (credentialsService *credentialsService) GetNetatmoOAuth() (netatmo.Netatmo
 	response, error := http.PostForm(apiUrl, data)
 
 	if error != nil {
-		logger.Error(fmt.Sprintf("Failed to get Netatmo OAuthToken %s", error.Error()))
+		logger.WithError(error).Error("Failed to get Netatmo OAuthToken")
 		return *netatmoOAuth, errors.New("Failed to get Netatmo OAuth token from response!")
 	}
 
@@ -150,7 +151,7 @@ func getNetatmoToken(reader io.ReadCloser) (netatmo.NetatmoOAuth, error) {
 	err := json.NewDecoder(reader).Decode(token)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to read OAuth token from Netatmo request %s", err.Error()))
+		logger.WithError(err).Error("Failed to read OAuth token from Netatmo request")
 		return *token, err
 	}
 
@@ -199,9 +200,8 @@ func hueAppKeyPath() string {
 	_ = fileInfo
 
 	if os.IsNotExist(error) {
-		errCreateDir := os.MkdirAll(path.Join(currentDir, "settings"), 0755)
-		if errCreateDir != nil {
-			logger.Error(fmt.Sprintf("Failed to create directory for hueappkey to be stored %s", errCreateDir.Error()))
+		if errCreateDir := os.MkdirAll(path.Join(currentDir, "settings"), 0755); errCreateDir != nil {
+			logger.WithError(errCreateDir).Error("Failed to create directory for hueappkey to be stored")
 			return ""
 		}
 	}
