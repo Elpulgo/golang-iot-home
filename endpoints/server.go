@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"iot-home/netatmo"
 	"net/http"
+	"time"
 )
 
 const STATIC_DIR = "./wwwroot/"
@@ -27,7 +28,7 @@ func serveApiEndpoints(netatmoService netatmo.Service) {
 	http.Header.Set(http.Header{}, "Content-Type", "application/json")
 
 	http.Handle(API_PREFIX+"netatmo/current", serveNetatmoCurrent(netatmoService))
-	// http.Handle(API_PREFIX+"netatmo/series", serveNetatmoSeries())
+	http.Handle(API_PREFIX+"netatmo/series", serveNetatmoSeries(netatmoService))
 	// http.Handle(API_PREFIX+"wunderlist", serveWunderlist())
 	// http.Handle(API_PREFIX+"hue", serveHue())
 }
@@ -46,9 +47,19 @@ func serveNetatmoCurrent(service netatmo.Service) http.Handler {
 	return handlerFunc
 }
 
-// func serveNetatmoSeries() http.Handler {
+func serveNetatmoSeries(service netatmo.Service) http.Handler {
+	handlerFunc := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
+		current, error := service.GetHistory(time.Now().AddDate(0, 0, -3), time.Now().UTC())
+		if error != nil {
+			fmt.Println(error)
+			responseWriter.Write([]byte("Failed to get historic data from Netatmo!"))
+			return
+		}
+		json.NewEncoder(responseWriter).Encode(current)
+	})
 
-// }
+	return handlerFunc
+}
 
 // func serveWunderlist() http.Handler {
 

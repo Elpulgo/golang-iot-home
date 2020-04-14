@@ -1,4 +1,4 @@
-package netatmo
+package models
 
 import "time"
 

@@ -1,6 +1,6 @@
-package netatmo
+package models
 
-type History struct {
+type NetatmoHistory struct {
 	Steps []Step `json:"body"`
 	Name  string
 }

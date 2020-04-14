@@ -1,27 +1,34 @@
 package netatmo
 
-type Repository interface {
-	GetCurrent(chan CurrentResult)
-}
+import (
+	"iot-home/models"
+	"time"
+)
 
 type Service interface {
-	GetCurrent() (Current, error)
+	GetCurrent() (models.NetatmoCurrent, error)
+	GetHistory(start time.Time, end time.Time) (models.NetatmoHistory, error)
 }
 
 type service struct {
-	repository Repository
+	repository RestService
 }
 
 type CurrentResult struct {
-	Current Current
+	Current models.NetatmoCurrent
 	Error   error
 }
 
-func New(repository Repository) Service {
+type HistoricResult struct {
+	History models.NetatmoHistory
+	Error   error
+}
+
+func NewService(repository RestService) Service {
 	return &service{repository: repository}
 }
 
-func (service *service) GetCurrent() (Current, error) {
+func (service *service) GetCurrent() (models.NetatmoCurrent, error) {
 	channel := make(chan CurrentResult)
 
 	go service.repository.GetCurrent(channel)
@@ -29,5 +36,13 @@ func (service *service) GetCurrent() (Current, error) {
 	response := <-channel
 
 	return response.Current, response.Error
+}
 
+func (service *service) GetHistory(start time.Time, end time.Time) (models.NetatmoHistory, error) {
+	channel := make(chan HistoricResult)
+
+	go service.repository.GetHistory(start, end, channel)
+
+	response := <-channel
+	return response.History, response.Error
 }

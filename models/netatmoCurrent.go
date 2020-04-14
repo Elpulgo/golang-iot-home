@@ -1,6 +1,6 @@
-package netatmo
+package models
 
-type Current struct {
+type NetatmoCurrent struct {
 	CurrentData CurrentData `json:"body"`
 }
 

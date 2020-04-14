@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"iot-home/netatmo"
+	"iot-home/models"
 	"iot-home/utilities"
 	"net/http"
 	"net/url"
@@ -19,7 +19,7 @@ import (
 
 var lock = &sync.Mutex{}
 
-var netatmoOAuth *netatmo.NetatmoOAuth
+var netatmoOAuth *models.NetatmoOAuth
 var hueAppKey *string
 
 var DeviceName string = "b5c92462-aede-47de"
@@ -29,7 +29,7 @@ type CredentialsService interface {
 	GetHueCredentials() (appKey string, appName string, deviceName string)
 	TryPersistHueAppKey(appKey string) bool
 	GetWunderlistCredentials() (accessToken string, clientId string)
-	GetNetatmoOAuth() (netatmo.NetatmoOAuth, error)
+	GetNetatmoOAuth() (models.NetatmoOAuth, error)
 }
 
 type credentialsService struct {
@@ -88,7 +88,7 @@ func (credentialsService *credentialsService) GetWunderlistCredentials() (access
 	return accessToken, clientId
 }
 
-func (credentialsService *credentialsService) GetNetatmoOAuth() (netatmo.NetatmoOAuth, error) {
+func (credentialsService *credentialsService) GetNetatmoOAuth() (models.NetatmoOAuth, error) {
 
 	if netatmoTokenAlreadyValid() {
 		return *netatmoOAuth, nil
@@ -146,8 +146,8 @@ func netatmoTokenAlreadyValid() bool {
 	return false
 }
 
-func getNetatmoToken(reader io.ReadCloser) (netatmo.NetatmoOAuth, error) {
-	token := new(netatmo.NetatmoOAuth)
+func getNetatmoToken(reader io.ReadCloser) (models.NetatmoOAuth, error) {
+	token := new(models.NetatmoOAuth)
 	err := json.NewDecoder(reader).Decode(token)
 
 	if err != nil {
