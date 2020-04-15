@@ -2,7 +2,6 @@ package netatmo
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"iot-home/credentials"
 	"iot-home/models"
@@ -44,12 +43,7 @@ func (rest *rest) GetHistory(start time.Time, end time.Time, result chan Histori
 		result <- HistoricResult{History: models.NetatmoHistory{}, Error: error}
 	}
 
-	fmt.Println(start.Unix())
-	fmt.Println(end.Unix())
-
 	apiUrl := utilities.BuildNetatmoMeasureUrl(token.AccessToken, deviceId, "", start.Unix(), end.Unix()).String()
-
-	fmt.Println(apiUrl)
 
 	response, error := http.Get(apiUrl)
 
@@ -66,10 +60,6 @@ func (rest *rest) GetHistory(start time.Time, end time.Time, result chan Histori
 		logger.Error("Failed to parse body from Netatmo _history_ API")
 		result <- HistoricResult{History: models.NetatmoHistory{}, Error: error}
 	}
-
-	bodyTest := string(body)
-
-	fmt.Println(bodyTest)
 
 	var historyData models.NetatmoHistory
 

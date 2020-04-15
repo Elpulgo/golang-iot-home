@@ -1,8 +1,8 @@
 package utilities
 
 import (
-	"fmt"
 	"net/url"
+	"strconv"
 
 	logger "github.com/sirupsen/logrus"
 )
@@ -32,8 +32,8 @@ func BuildNetatmoMeasureUrl(
 			"?access_token=" + accessToken +
 			"&device_id=" + deviceId +
 			"&module_id=" + moduleId +
-			"&date_begin=" + fmt.Sprintf("%s", string(start)) +
-			"&date_end=" + fmt.Sprintf("%s", string(end)) +
+			"&date_begin=" + strconv.FormatInt(start, 10) +
+			"&date_end=" + strconv.FormatInt(end, 10) +
 			"&scale=max" +
 			"&type=temperature,humidity")
 
