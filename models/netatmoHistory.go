@@ -40,6 +40,10 @@ func (history NetatmoHistory) MapToDto(name string) []NetatmoSerieDto {
 
 	for _, step := range history.Steps {
 		for _, value := range step.Values {
+			if isSameTimestampAsPrevious(valuesTemp, step) {
+				continue
+			}
+
 			valuesTemp = append(valuesTemp, netatmoValueDto{
 				Timestamp: time.Unix(step.Start, 10),
 				Value:     value[0],
@@ -57,6 +61,10 @@ func (history NetatmoHistory) MapToDto(name string) []NetatmoSerieDto {
 
 	for _, step := range history.Steps {
 		for _, value := range step.Values {
+			if isSameTimestampAsPrevious(valuesHumidity, step) {
+				continue
+			}
+
 			valuesHumidity = append(valuesHumidity, netatmoValueDto{
 				Timestamp: time.Unix(step.Start, 10),
 				Value:     value[len(value)-1],
@@ -71,4 +79,14 @@ func (history NetatmoHistory) MapToDto(name string) []NetatmoSerieDto {
 	})
 
 	return dtos
+}
+
+func isSameTimestampAsPrevious(values []netatmoValueDto, step Step) bool {
+	if len(values) == 0 {
+		return false
+	} else if values[len(values)-1].Timestamp == time.Unix(step.Start, 10) {
+		return true
+	}
+
+	return false
 }
