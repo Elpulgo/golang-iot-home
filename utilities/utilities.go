@@ -57,7 +57,7 @@ func BuildStationUrl(accessToken string, deviceId string) *url.URL {
 	return stationUrl
 }
 
-func BuildListsUrl(accessToken string, clientId string) *url.URL {
+func BuildWunderlistListsUrl(accessToken string, clientId string) *url.URL {
 	listUrl, error := url.Parse(
 		WunderlistBaseUrl +
 			"/lists" +
@@ -70,7 +70,7 @@ func BuildListsUrl(accessToken string, clientId string) *url.URL {
 	return listUrl
 }
 
-func BuildTasksUrl(accessToken string, clientId string, listId int64) *url.URL {
+func BuildWunderlistTasksUrl(accessToken string, clientId string, listId int64) *url.URL {
 	tasksUrl, error := url.Parse(
 		WunderlistBaseUrl +
 			"/tasks" +
