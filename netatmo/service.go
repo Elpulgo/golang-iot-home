@@ -40,9 +40,8 @@ func (service *service) GetCurrent() ([]models.NetatmoCurrentDto, error) {
 
 func (service *service) GetHistory(start time.Time, end time.Time) ([]models.NetatmoSerieDto, error) {
 	channel := make(chan HistoricResult)
-
 	go service.repository.GetHistory(start, end, channel)
-
 	response := <-channel
+
 	return response.History, response.Error
 }

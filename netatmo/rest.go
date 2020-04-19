@@ -14,7 +14,6 @@ import (
 )
 
 type RestService interface {
-	// TODO: Return our datamodel instead...
 	GetCurrent(result chan CurrentResult)
 	GetHistory(start time.Time, end time.Time, result chan HistoricResult)
 }
@@ -34,6 +33,7 @@ func (rest *rest) GetHistory(start time.Time, end time.Time, result chan Histori
 	if error != nil {
 		logger.Error("Failed to get Netatmo historic data from Netatmo API, access token not working")
 		result <- HistoricResult{History: []models.NetatmoSerieDto{}, Error: error}
+		return
 	}
 
 	deviceId, deviceIdExists := os.LookupEnv("NETATMO_DEVICEID")
@@ -41,6 +41,7 @@ func (rest *rest) GetHistory(start time.Time, end time.Time, result chan Histori
 	if !deviceIdExists {
 		logger.Error("Netatmo deviceid not set up in .env file! Can't fetch data from Netatmo API!")
 		result <- HistoricResult{History: []models.NetatmoSerieDto{}, Error: error}
+		return
 	}
 
 	channelIndoor := make(chan HistoricResult)
@@ -56,6 +57,7 @@ func (rest *rest) GetHistory(start time.Time, end time.Time, result chan Histori
 	if !moduleIdExists {
 		logger.Error("Netatmo outdoor module not set up in .env file! Can't fetch data from Netatmo API!")
 		result <- HistoricResult{History: responseIndoor.History, Error: nil}
+		return
 	}
 
 	channelOutdoor := make(chan HistoricResult)
@@ -88,6 +90,7 @@ func getHistory(
 	if error != nil {
 		logger.WithError(error).Error("Failed to get _history_ data from Netatmo API")
 		result <- HistoricResult{History: []models.NetatmoSerieDto{}, Error: error}
+		return
 	}
 
 	defer response.Body.Close()
@@ -97,6 +100,7 @@ func getHistory(
 	if error != nil {
 		logger.Error("Failed to parse body from Netatmo _history_ API")
 		result <- HistoricResult{History: []models.NetatmoSerieDto{}, Error: error}
+		return
 	}
 
 	var historyData models.NetatmoHistory
@@ -111,6 +115,7 @@ func (rest *rest) GetCurrent(result chan CurrentResult) {
 	if error != nil {
 		logger.Error("Failed to get Netatmo current data from Netatmo API, access token not working")
 		result <- CurrentResult{Current: []models.NetatmoCurrentDto{}, Error: error}
+		return
 	}
 
 	deviceId, deviceIdExists := os.LookupEnv("NETATMO_DEVICEID")
@@ -118,6 +123,7 @@ func (rest *rest) GetCurrent(result chan CurrentResult) {
 	if !deviceIdExists {
 		logger.Error("Netatmo deviceid not set up in .env file! Can't fetch data from Netatmo API!")
 		result <- CurrentResult{Current: []models.NetatmoCurrentDto{}, Error: error}
+		return
 	}
 
 	apiUrl := utilities.BuildStationUrl(token.AccessToken, deviceId).String()
@@ -127,6 +133,7 @@ func (rest *rest) GetCurrent(result chan CurrentResult) {
 	if error != nil {
 		logger.WithError(error).Error("Failed to get _current_ data from Netatmo API")
 		result <- CurrentResult{Current: []models.NetatmoCurrentDto{}, Error: error}
+		return
 	}
 
 	defer response.Body.Close()
@@ -136,6 +143,7 @@ func (rest *rest) GetCurrent(result chan CurrentResult) {
 	if error != nil {
 		logger.Error("Failed to parse body from Netatmo _current_ API")
 		result <- CurrentResult{Current: []models.NetatmoCurrentDto{}, Error: error}
+		return
 	}
 
 	var currentData models.NetatmoCurrent
