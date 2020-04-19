@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"iot-home/netatmo"
+	"iot-home/wunderlist"
 	"net/http"
 	"time"
 )
@@ -11,12 +12,12 @@ import (
 const STATIC_DIR = "./wwwroot/"
 const API_PREFIX = "/api/v1/data/"
 
-func Init(netatmoService netatmo.Service) {
+func Init(netatmoService netatmo.Service, wunderlistService wunderlist.Service) {
 	serveStaticContent()
-	serveApiEndpoints(netatmoService)
+	serveApiEndpoints(netatmoService, wunderlistService)
 }
 
-func serveApiEndpoints(netatmoService netatmo.Service) {
+func serveApiEndpoints(netatmoService netatmo.Service, wunderlistService wunderlist.Service) {
 	// appKey, appName, deviceName := credentials.GetHueCredentials()
 
 	// if credentials.TryPersistHueAppKey("my app key") {
@@ -29,7 +30,7 @@ func serveApiEndpoints(netatmoService netatmo.Service) {
 
 	http.Handle(API_PREFIX+"netatmo/current", serveNetatmoCurrent(netatmoService))
 	http.Handle(API_PREFIX+"netatmo/series", serveNetatmoSeries(netatmoService))
-	// http.Handle(API_PREFIX+"wunderlist", serveWunderlist())
+	http.Handle(API_PREFIX+"wunderlist", serveWunderlist(wunderlistService))
 	// http.Handle(API_PREFIX+"hue", serveHue())
 }
 
@@ -61,9 +62,19 @@ func serveNetatmoSeries(service netatmo.Service) http.Handler {
 	return handlerFunc
 }
 
-// func serveWunderlist() http.Handler {
+func serveWunderlist(service wunderlist.Service) http.Handler {
+	handlerFunc := http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
+		current, error := service.GetData()
+		if error != nil {
+			fmt.Println(error)
+			responseWriter.Write([]byte("Failed to get historic data from Netatmo!"))
+			return
+		}
+		json.NewEncoder(responseWriter).Encode(current)
+	})
 
-// }
+	return handlerFunc
+}
 
 // func serveHue() http.Handler {
 

@@ -3,6 +3,7 @@ package ioc
 import (
 	"iot-home/credentials"
 	"iot-home/netatmo"
+	"iot-home/wunderlist"
 
 	"github.com/golobby/container"
 )
@@ -23,4 +24,10 @@ func Setup() {
 		container.Make(&rest)
 		return netatmo.NewService(rest)
 	})
+
+	container.Transient(func() wunderlist.Service) {
+		var rest wunderlist.RestService
+		container.Make(&rest)
+		return wunderlist.New(rest)
+	}
 }
