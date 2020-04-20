@@ -25,9 +25,15 @@ func Setup() {
 		return netatmo.NewService(rest)
 	})
 
-	container.Transient(func() wunderlist.Service) {
+	container.Transient(func() wunderlist.RestService {
+		var credentials credentials.CredentialsService
+		container.Make(&credentials)
+		return wunderlist.NewRestService(credentials)
+	})
+
+	container.Transient(func() wunderlist.Service {
 		var rest wunderlist.RestService
 		container.Make(&rest)
-		return wunderlist.New(rest)
-	}
+		return wunderlist.NewWunderlistService(rest)
+	})
 }

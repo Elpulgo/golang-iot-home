@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"io"
-	"iot-home/credentials"
 	"iot-home/endpoints"
 	"iot-home/ioc"
 	"iot-home/netatmo"
+	"iot-home/wunderlist"
 	"net/http"
 	"os"
 
@@ -16,9 +16,9 @@ import (
 )
 
 var (
-	netatmoService netatmo.Service
-	cred           credentials.CredentialsService
-	port           string = ":3001"
+	netatmoService    netatmo.Service
+	wunderlistService wunderlist.Service
+	port              string = ":3001"
 )
 
 func init() {
@@ -34,15 +34,8 @@ func init() {
 func main() {
 
 	container.Make(&netatmoService)
-	container.Make(&cred)
-	endpoints.Init(netatmoService)
-
-	netatmoCred, err := cred.GetNetatmoOAuth()
-	if err != nil {
-		logger.WithError(err)
-	}
-
-	logger.WithFields(logger.Fields{"netatmo cred": netatmoCred}).Info("hello")
+	container.Make(&wunderlistService)
+	endpoints.Init(netatmoService, wunderlistService)
 
 	logger.WithField("Port", port).Info("Started web server ...")
 	error := http.ListenAndServe(port, nil)
