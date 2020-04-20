@@ -73,7 +73,7 @@ func (credentialsService *credentialsService) TryPersistHueAppKey(appKey string)
 
 func (credentialsService *credentialsService) GetWunderlistCredentials() (accessToken string, clientId string) {
 	clientId, clientIdExists := os.LookupEnv("WUNDERLIST_CLIENTID")
-	accessToken, accessTokenExists := os.LookupEnv("WUNDERLIST_CLIENTID")
+	accessToken, accessTokenExists := os.LookupEnv("WUNDERLIST_ACCESSTOKEN")
 
 	if !clientIdExists {
 		logger.Error("Wunderlist credentials is missing, ensure clientId exists in .env file!")
