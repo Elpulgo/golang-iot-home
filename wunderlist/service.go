@@ -5,7 +5,7 @@ import (
 )
 
 type Service interface {
-	GetData(chan WunderlistResult) ([]models.WunderlistDto, error)
+	GetData() ([]models.WunderlistDto, error)
 }
 
 type service struct {
@@ -17,13 +17,13 @@ type WunderlistResult struct {
 	Error error
 }
 
-func New(repository RestService) Service {
+func NewWunderlistService(repository RestService) Service {
 	return &service{repository: repository}
 }
 
 func (service *service) GetData() ([]models.WunderlistDto, error) {
 	channel := make(chan WunderlistResult)
-	go service.GetData(channel)
+	go service.repository.GetData(channel)
 	response := <-channel
 
 	return response.Lists, response.Error

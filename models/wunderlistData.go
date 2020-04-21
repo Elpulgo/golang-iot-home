@@ -22,6 +22,10 @@ type WunderlistTaskDto struct {
 	Type string
 }
 
-func (list WunderlistListData) MapToDto() WunderlistDto {
-
+func MapToDto(tasks []WunderlistTaskData, name string) WunderlistDto {
+	var dtoTasks []WunderlistTaskDto
+	for _, task := range tasks {
+		dtoTasks = append(dtoTasks, WunderlistTaskDto{Name: task.Name, Type: task.Type})
+	}
+	return WunderlistDto{Name: name, Tasks: dtoTasks}
 }

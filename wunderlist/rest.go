@@ -2,13 +2,13 @@ package wunderlist
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"iot-home/credentials"
 	"iot-home/models"
 	"iot-home/utilities"
 	"net/http"
 	"os"
+	"sync"
 
 	logger "github.com/sirupsen/logrus"
 )
@@ -22,7 +22,7 @@ type rest struct {
 	credentials credentials.CredentialsService
 }
 
-func New(credentials credentials.CredentialsService) RestService {
+func NewRestService(credentials credentials.CredentialsService) RestService {
 	return &rest{credentials: credentials}
 }
 
@@ -35,8 +35,7 @@ func (rest *rest) GetData(result chan WunderlistResult) {
 		return
 	}
 
-	firstList, firstListExists := os.LookupEnv("WUNDERLIST_LISTFIRST")
-	secondList, secondListExists := os.LookupEnv("WUNDERLIST_LISTSECOND")
+	_, firstListExists := os.LookupEnv("WUNDERLIST_LISTFIRST")
 
 	if !firstListExists {
 		logger.Error("No list exists in .env, can't fetch Wunderlist data!")
@@ -59,14 +58,59 @@ func (rest *rest) GetData(result chan WunderlistResult) {
 	var listsData []models.WunderlistListData
 
 	json.Unmarshal(body, &listsData)
+
+	wunderlistDtos, error := getTasks(listsData, accessToken, clientId)
+
+	result <- WunderlistResult{Lists: wunderlistDtos, Error: nil}
 }
 
-func getTasks(listsData []models.WunderlistListData) (models.WunderlistDto, error) {
+func getTasks(listsData []models.WunderlistListData, accessToken string, clientId string) ([]models.WunderlistDto, error) {
 	lists := getLists()
 
 	wunderlistData := filterLists(listsData, lists)
 
-	fmt.Println(wunderlistData)
+	var dtos []models.WunderlistDto
+	var waitGroup sync.WaitGroup
+
+	queue := make(chan models.WunderlistListData, 1)
+
+	waitGroup.Add(len(wunderlistData))
+
+	for _, data := range wunderlistData {
+		go func(data models.WunderlistListData) {
+			queue <- data
+		}(data)
+	}
+
+	// TODO: Some panic and recovery here... ?
+
+	go func() {
+		for data := range queue {
+			apiUrl := utilities.BuildWunderlistTasksUrl(accessToken, clientId, data.Id).String()
+			response, error := http.Get(apiUrl)
+
+			if error != nil {
+				logger.WithError(error).Error("Failed to get _tasks_ data from Wunderlist API")
+				continue
+			}
+
+			defer response.Body.Close()
+			body, error := ioutil.ReadAll(response.Body)
+
+			var tasksData []models.WunderlistTaskData
+
+			json.Unmarshal(body, &tasksData)
+
+			tasksDto := models.MapToDto(tasksData, data.Name)
+
+			dtos = append(dtos, tasksDto)
+			waitGroup.Done()
+		}
+	}()
+
+	waitGroup.Wait()
+
+	return dtos, nil
 }
 
 func getLists() []string {
@@ -78,6 +122,8 @@ func getLists() []string {
 		logger.Error("No list exists in .env, can't fetch Wunderlist data!")
 		return lists
 	}
+
+	lists = append(lists, firstList)
 
 	secondList, secondListExists := os.LookupEnv("WUNDERLIST_LISTSECOND")
 	thirdList, thirdListExists := os.LookupEnv("WUNDERLIST_LISTTHIRD")
@@ -101,7 +147,7 @@ func getLists() []string {
 }
 
 func filterLists(listsFromResponse []models.WunderlistListData, selectedLists []string) (out []models.WunderlistListData) {
-	filtered := make(map[models.WunderlistListData]struct{}, len(selectedLists))
+	filtered := make(map[string]struct{}, len(selectedLists))
 	for _, data := range selectedLists {
 		filtered[data] = struct{}{}
 	}
