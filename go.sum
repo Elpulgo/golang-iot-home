@@ -1,9 +1,12 @@
+github.com/amimof/huego v0.0.0-20200223115831-f6a31f2b31ea h1:r4/zLx/h8PIKEr7e2mPCKfBsUOtjoKeTsPOLj1vPnIs=
+github.com/amimof/huego v0.0.0-20200223115831-f6a31f2b31ea/go.mod h1:mr/E9VhYr5K7kCE0P6raIdM53eZTdvC6rY7QVFtpzW4=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/golobby/container v1.2.3 h1:XqCMfdP40oYJf4IRML2/NmDpBUDEZXZoHLz5J32+UiY=
 github.com/golobby/container v1.2.3/go.mod h1:6yAH4QK+Hi8HxGuCJuAGiqS/a5n8YP+4bXNpPdKzLVM=
 github.com/gorilla/mux v1.7.4 h1:VuZ8uybHlWmqV03+zRzdwKL4tUnIp1MAQtp1mIFE1bc=
 github.com/gorilla/mux v1.7.4/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
+github.com/jarcoal/httpmock v1.0.4/go.mod h1:ATjnClrvW/3tijVmpL/va5Z3aAyGvqU3gCT8nX0Txik=
 github.com/joho/godotenv v1.3.0 h1:Zjp+RcGpHhGlrMbJzXTrZZPrWj+1vfm90La1wgB6Bhc=
 github.com/joho/godotenv v1.3.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
