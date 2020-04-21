@@ -8,6 +8,7 @@ import (
 	"iot-home/utilities"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 
 	logger "github.com/sirupsen/logrus"
@@ -55,8 +56,13 @@ func (rest *rest) GetData(result chan WunderlistResult) {
 	defer response.Body.Close()
 	body, error := ioutil.ReadAll(response.Body)
 
-	var listsData []models.WunderlistListData
+	if error != nil {
+		logger.WithError(error).Error("Failed to read body from Wunderlist API list response")
+		result <- WunderlistResult{}
+		return
+	}
 
+	var listsData []models.WunderlistListData
 	json.Unmarshal(body, &listsData)
 
 	wunderlistDtos, error := getTasks(listsData, accessToken, clientId)
@@ -64,7 +70,11 @@ func (rest *rest) GetData(result chan WunderlistResult) {
 	result <- WunderlistResult{Lists: wunderlistDtos, Error: nil}
 }
 
-func getTasks(listsData []models.WunderlistListData, accessToken string, clientId string) ([]models.WunderlistDto, error) {
+func getTasks(
+	listsData []models.WunderlistListData,
+	accessToken string,
+	clientId string) ([]models.WunderlistDto, error) {
+
 	lists := getLists()
 
 	wunderlistData := filterLists(listsData, lists)
@@ -82,8 +92,6 @@ func getTasks(listsData []models.WunderlistListData, accessToken string, clientI
 		}(data)
 	}
 
-	// TODO: Some panic and recovery here... ?
-
 	go func() {
 		for data := range queue {
 			apiUrl := utilities.BuildWunderlistTasksUrl(accessToken, clientId, data.Id).String()
@@ -91,16 +99,20 @@ func getTasks(listsData []models.WunderlistListData, accessToken string, clientI
 
 			if error != nil {
 				logger.WithError(error).Error("Failed to get _tasks_ data from Wunderlist API")
+				defer response.Body.Close()
 				continue
 			}
 
 			defer response.Body.Close()
 			body, error := ioutil.ReadAll(response.Body)
 
+			if error != nil {
+				logger.WithError(error).WithField("listId", strconv.FormatInt(data.Id, 10)).Error("Failed to read response from Wunderlist API for tasks")
+				continue
+			}
+
 			var tasksData []models.WunderlistTaskData
-
 			json.Unmarshal(body, &tasksData)
-
 			tasksDto := models.MapToDto(tasksData, data.Name)
 
 			dtos = append(dtos, tasksDto)
