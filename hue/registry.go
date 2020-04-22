@@ -25,12 +25,11 @@ func NewRegistry(credentials credentials.CredentialsService) Registry {
 
 func (registry *registry) Connect() (huego.Bridge, error) {
 
-	bridge := huego.Bridge{}
 	bridgeIp, bridgeIpExists := os.LookupEnv("PHILIPS_HUE_BRIDGEIP")
 
 	if !bridgeIpExists {
 		logger.Error("No Philips Hue bridge Ip exists in .env, can't connect to Hue bridge!")
-		return bridge, errors.New("Failed to connect to Hue Brdige! .env variable for IP is missing!")
+		return huego.Bridge{}, errors.New("Failed to connect to Hue Brdige! .env variable for IP is missing!")
 	}
 
 	appKey, appName, deviceName := registry.credentials.GetHueCredentials()
@@ -45,22 +44,9 @@ func (registry *registry) Connect() (huego.Bridge, error) {
 		return bridge, nil
 	}
 
-	// Cs08g-uWrF9F272PJW6zL6wukVdALVoujGgHGCjY
-
 	bridgeNew := huego.New(bridgeIp, appKey)
 	var connectedBridge huego.Bridge = *bridgeNew
 	return connectedBridge, nil
-	// logger.Info(bridgeNew)
-
-	// lights, error := bridgeNew.GetLights()
-	// if error != nil {
-	// 	logger.WithError(error).Error("Failed to get lights")
-	// } else {
-	// 	logger.Info(lights)
-	// }
-
-	// return huego.Bridge{}, nil
-	// bridge, succeded := huego.New("192.168.1.59", "username")
 }
 
 func (registry *registry) tryRegister(appName string, deviceName string, bridgeIp string) (huego.Bridge, bool, error) {
