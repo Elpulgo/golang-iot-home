@@ -5,6 +5,7 @@ import (
 	"iot-home/credentials"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/amimof/huego"
 	logger "github.com/sirupsen/logrus"
@@ -36,24 +37,37 @@ func (registry *registry) Connect() (huego.Bridge, error) {
 
 	if appKey == "" {
 		logger.Info("Failed to load app key for Philips Hue bridge, will try and register ...")
-		bridge, succeded := tryRegister(appName, deviceName, bridgeIp)
+		bridge, succeded, error := registry.tryRegister(appName, deviceName, bridgeIp)
 		if !succeded {
-			logger.Error("Failed to locate bridge, won't connect")
-			return huego.Bridge{}, errors.New("Failed to locate bridge, won't connect")
+			return huego.Bridge{}, error
 		}
 
-		logger.Info(bridge)
+		return bridge, nil
 	}
 
-	return huego.Bridge{}, nil
+	// Cs08g-uWrF9F272PJW6zL6wukVdALVoujGgHGCjY
+
+	bridgeNew := huego.New(bridgeIp, appKey)
+	var connectedBridge huego.Bridge = *bridgeNew
+	return connectedBridge, nil
+	// logger.Info(bridgeNew)
+
+	// lights, error := bridgeNew.GetLights()
+	// if error != nil {
+	// 	logger.WithError(error).Error("Failed to get lights")
+	// } else {
+	// 	logger.Info(lights)
+	// }
+
+	// return huego.Bridge{}, nil
 	// bridge, succeded := huego.New("192.168.1.59", "username")
 }
 
-func tryRegister(appName string, deviceName string, bridgeIp string) (huego.Bridge, bool) {
+func (registry *registry) tryRegister(appName string, deviceName string, bridgeIp string) (huego.Bridge, bool, error) {
 	bridges, error := huego.DiscoverAll()
 	if error != nil {
 		logger.WithError(error).Error("Failed to locate Hue bridges on the network")
-		return huego.Bridge{}, false
+		return huego.Bridge{}, false, errors.New("Failed to locate Hue bridges on the network")
 	}
 
 	index := sort.Search(len(bridges), func(i int) bool {
@@ -61,19 +75,29 @@ func tryRegister(appName string, deviceName string, bridgeIp string) (huego.Brid
 	})
 
 	if index > 0 {
-		return huego.Bridge{}, false
+		return huego.Bridge{}, false, errors.New("Failed to find bridge on network")
 	}
 
-	bridge := bridges[index]
-	user, error := bridge.CreateUser(appName)
+	foundBridge := bridges[index]
+	user, error := foundBridge.CreateUser(appName)
 	if error != nil {
+		if strings.Contains("ERROR 101", error.Error()) {
+			logger.WithError(error).Error("Link button not pressed!")
+			return huego.Bridge{}, false, errors.New("Link button not pressed!")
+		}
+
 		logger.WithError(error).Error("Failed to create user for Hue bridge")
-		return huego.Bridge{}, false
+		return huego.Bridge{}, false, errors.New("Failed to create user for Hue bridge")
 	}
 
-	connectedBridge := bridge.Login(user)
-
+	bridge := foundBridge.Login(user)
+	var connectedBridge huego.Bridge = *bridge
 	logger.Info(connectedBridge)
 
-	return huego.Bridge{}, false
+	if !registry.credentials.TryPersistHueAppKey(connectedBridge.ID) {
+		logger.Error("Failed to persist app key for Hue bridge ...")
+		return huego.Bridge{}, false, errors.New("Failed to persist app key for Hue bridge!")
+	}
+
+	return connectedBridge, false, nil
 }
