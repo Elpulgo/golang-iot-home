@@ -2,6 +2,7 @@ package ioc
 
 import (
 	"iot-home/credentials"
+	"iot-home/hue"
 	"iot-home/netatmo"
 	"iot-home/wunderlist"
 
@@ -35,5 +36,11 @@ func Setup() {
 		var rest wunderlist.RestService
 		container.Make(&rest)
 		return wunderlist.NewWunderlistService(rest)
+	})
+
+	container.Transient(func() hue.Registry {
+		var credentials credentials.CredentialsService
+		container.Make(&credentials)
+		return hue.NewRegistry(credentials)
 	})
 }

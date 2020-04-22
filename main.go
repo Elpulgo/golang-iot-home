@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"iot-home/endpoints"
+	"iot-home/hue"
 	"iot-home/ioc"
 	"iot-home/netatmo"
 	"iot-home/wunderlist"
@@ -36,6 +37,12 @@ func main() {
 	container.Make(&netatmoService)
 	container.Make(&wunderlistService)
 	endpoints.Init(netatmoService, wunderlistService)
+
+	var hueRegistry hue.Registry
+
+	container.Make(&hueRegistry)
+
+	hueRegistry.Connect()
 
 	logger.WithField("Port", port).Info("Started web server ...")
 	error := http.ListenAndServe(port, nil)

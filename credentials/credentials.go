@@ -45,7 +45,7 @@ func (credentialsService *credentialsService) GetHueCredentials() (appKey string
 
 	if error != nil {
 		logger.WithError(error).Error("Failed to load app key")
-		return "", "", ""
+		return "", AppName, DeviceName
 	}
 
 	return appKey, AppName, DeviceName
