@@ -16,14 +16,14 @@ type Step struct {
 // Dto
 
 type NetatmoSerieDto struct {
-	Name   string
-	Type   seriesType
-	Values []netatmoValueDto
+	Name   string            `json:"name"`
+	Type   seriesType        `json:"type"`
+	Values []netatmoValueDto `json:"values"`
 }
 
 type netatmoValueDto struct {
-	Value     float32
-	Timestamp time.Time
+	Value     float32   `json:"value"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 type seriesType string

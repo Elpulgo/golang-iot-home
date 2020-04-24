@@ -13,13 +13,13 @@ type WunderlistTaskData struct {
 }
 
 type WunderlistDto struct {
-	Name  string
-	Tasks []WunderlistTaskDto
+	Name  string              `json:"name"`
+	Tasks []WunderlistTaskDto `json:"tasks"`
 }
 
 type WunderlistTaskDto struct {
-	Name string
-	Type string
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
 func MapToDto(tasks []WunderlistTaskData, name string) WunderlistDto {

@@ -32,16 +32,16 @@ type DashboardData struct {
 // Dto
 
 type NetatmoCurrentDto struct {
-	Name             string
-	Temperature      float32
-	CO2              float32
-	Humidity         int64
-	Pressure         float32
-	AbsolutePressure float32
-	MinTemp          float32
-	MaxTemp          float32
-	TempTrend        string
-	PressureTrend    string
+	Name             string  `json:"name"`
+	Temperature      float32 `json:"temperature"`
+	CO2              float32 `json:"co2"`
+	Humidity         int64   `json:"humidity"`
+	Pressure         float32 `json:"pressure"`
+	AbsolutePressure float32 `json:"absolutePressure"`
+	MinTemp          float32 `json:"minTemp"`
+	MaxTemp          float32 `json:"maxTemp"`
+	TempTrend        string  `json:"tempTrend"`
+	PressureTrend    string  `json:"pressureTrend"`
 }
 
 func (data CurrentData) MapToDto() []NetatmoCurrentDto {
