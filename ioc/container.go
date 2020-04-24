@@ -43,4 +43,10 @@ func Setup() {
 		container.Make(&credentials)
 		return hue.NewRegistry(credentials)
 	})
+
+	container.Transient(func() hue.Service {
+		var registry hue.Registry
+		container.Make(&registry)
+		return hue.NewHueService(registry)
+	})
 }

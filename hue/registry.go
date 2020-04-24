@@ -44,8 +44,9 @@ func (registry *registry) Connect() (huego.Bridge, error) {
 		return bridge, nil
 	}
 
-	bridgeNew := huego.New(bridgeIp, appKey)
+	bridgeNew := huego.New(bridgeIp, appName)
 	var connectedBridge huego.Bridge = *bridgeNew
+
 	return connectedBridge, nil
 }
 
