@@ -19,6 +19,7 @@ import (
 var (
 	netatmoService    netatmo.Service
 	wunderlistService wunderlist.Service
+	hueService        hue.Service
 	port              string = ":3001"
 )
 
@@ -36,13 +37,9 @@ func main() {
 
 	container.Make(&netatmoService)
 	container.Make(&wunderlistService)
-	endpoints.Init(netatmoService, wunderlistService)
+	container.Make(&hueService)
 
-	var hueRegistry hue.Registry
-
-	container.Make(&hueRegistry)
-
-	hueRegistry.Connect()
+	endpoints.Init(netatmoService, wunderlistService, hueService)
 
 	logger.WithField("Port", port).Info("Started web server ...")
 	error := http.ListenAndServe(port, nil)

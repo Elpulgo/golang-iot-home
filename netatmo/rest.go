@@ -106,6 +106,7 @@ func getHistory(
 	var historyData models.NetatmoHistory
 
 	json.Unmarshal(body, &historyData)
+
 	result <- HistoricResult{History: historyData.MapToDto(name), Error: nil}
 }
 
